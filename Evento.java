@@ -10,6 +10,7 @@ public class Evento {
 	private Date validez;
 	private int porcentaje_devolución;
 	
+
 	public Evento()
 	 {
 	     super();
@@ -64,7 +65,17 @@ public class Evento {
 	public void setPorcentaje_devolución(int porcentaje_devolución) {
 		this.porcentaje_devolución = porcentaje_devolución;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Evento [ID=" + ID + ", ID_recinto=" + ID_recinto
+				+ ", fecha_inicio=" + fecha_inicio + ", fecha_fin=" + fecha_fin
+				+ ", validez=" + validez + ", porcentaje_devolución="
+				+ porcentaje_devolución + "]";
+	}
 	
+
 	
 	
 	

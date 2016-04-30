@@ -76,22 +76,22 @@ public class Principal {
 	 {
 		 		
 		DNI="12345678A";
-		/*
+		
 	    HashMap<Integer, String> mapa = new  HashMap<Integer, String>();
 		
 		mapa.put(4, "Adulto");
 		mapa.put(12, "Adulto");
-		mapa.put(52, "Adulto");
-		mapa.put(23, "Adulto");
-		mapa.put(54, "Adulto");
+		mapa.put(3, "Adulto");
+		mapa.put(1, "Adulto");
+		mapa.put(2, "Adulto");
 		mapa.put(5, "Adulto");
 		mapa.put(6, "Adulto");
 		
 		
-		reservarEntradas(1, "Marcador", mapa);
-		 */
+		//System.out.println(reservarEntradas(8, "Patio butacas", mapa));
+		 
 		
-		//System.out.println(pagarReserva(3));
+		//System.out.println(pagarReserva(37));
 		/*
 		ArrayList<Grada> gradas = new ArrayList<Grada>();
 		gradas = listarGradas(4);
@@ -120,6 +120,16 @@ public class Principal {
 		for(int i=0; i<reservas.size(); i++)
 			System.out.println(reservas.get(i));
 		
+		/*
+		ArrayList<Espectaculo> espectaculos= new ArrayList<Espectaculo>();
+		espectaculos = listarEspectaculos("El Rey León", "");
+		
+		for(int i=0; i<espectaculos.size(); i++)
+			System.out.println(espectaculos.get(i).toString());
+		*/
+		
+		
+		System.out.println(anularReserva(30));
 		
 	 }
 	
@@ -474,6 +484,7 @@ public class Principal {
 	 * 		   -> -1 En caso de no existir la reserva con ese identificador para el cliente con ese DNI.
 	 *         -> -2 En caso de que la reserva seleccionada ya estea pagada.
 	 *         -> -3 En caso de error directo al realizar el cambio en la base de datos a pagado.
+	 *		 -100 -> Excepción
 	 */ 
 	public int pagarReserva(int ID_reserva)
 	 {
@@ -514,7 +525,6 @@ public class Principal {
 			sal = stmt.executeUpdate("UPDATE Reservas SET Pagada=1 WHERE ID="+ID_reserva+";");
 			if(sal<0)
 			 {
-				System.out.println("Error al realizar el pago de la reserva.");
 				return -3;
 			 }
 			else
@@ -527,120 +537,95 @@ public class Principal {
 			System.out.println("SQLException: " + se.getMessage());
 		    System.out.println("SQLState: " + se.getSQLState());
 		    System.out.println("VendorError: " + se.getErrorCode());
+		    return -100;
 		 }
 		catch(Exception e)
 		 {
 			System.out.println("Error: "+e.getMessage());
+			return -100;
 		 }
 		
 		return 1;
 	 }
 	
 	
-	/**
+	
+/**
 	 * Permite anular una reserva. En caso de no estar pagada (pre-reserva), simplemente se eliminará la reserva con sus correspondientes entradas.
 	 * Si la reserva ya ha sido pagada se le devolverá el importe total de la reserva, siempre que no pase del periodo de validez,
 	 * en este caso el importe que se le devolverá será una parte propocional del total dependiente del evento.
 	 * @param ID_reserva -> Identificador de la reserva que se desea anular.
-	 * @return  1  -> Si la reserva se ha anulado correctamente.
-	 * @return -1 ->	Error al eliminar la reserva.
-	 * @return -2 -> No se puede eliminar porque el evento ya se ha celebrado.
-	 * @return -3 -> Error al introducir la ID de reserva
+	 * @return
+	 * 		    1 -> Correcto. La reserva se ha anulado corrrectamente. (Se devuelve el importe íntegro de la reserva, no ha superado la fecha de validez)
+	 * 	 	    2 -> Correcto. La reserva se ha anulado corrrectamente. (Se devuelve un porcentaje del importe de la reserva dependiendo del evento, se ha superado la fecha de validez)
+	 * 			3 -> Correcto. La pre-reserva se ha anulado correctamente. (No se devuelve dinero porque no habia sido pagada).
+	 * 		   -1 -> Error. No tiene ninguna reserva con este ID.
+	 *	 	   -2 -> Error. No se puede eliminar porque el evento ya se ha celebrado.
+	 *		   -3 -> Error al eliminar la reserva.
+	 *		 -100 -> Excepción
 	 */
-	public static int anularReserva(int ID_reserva)
+	public int anularReserva(int ID_reserva)
 	 {
 		Statement stt;
 		ResultSet result;
 		int precio,retencion;
 		try
-		{
+		 {
 				stt=conn.createStatement();
 				result = stt.executeQuery("SELECT ID FROM Reservas WHERE ID="+ID_reserva+" AND DNI_cliente='"+DNI+"';");
 				if(result.next())
 				 {
-					CallableStatement cstmt = conn.prepareCall("{CALL calcula_devolucion(?,?)}");
+					CallableStatement cstmt = conn.prepareCall("{CALL calcula_devolucion(?,?,?)}");
 					cstmt.setInt(1, ID_reserva);
 					cstmt.registerOutParameter(2, java.sql.Types.INTEGER);
+					cstmt.registerOutParameter(3, java.sql.Types.INTEGER);
 					cstmt.executeUpdate();
-					precio=cstmt.getInt("precio");
-					retencion=cstmt.getInt("retencion");
-					if(precio==-1)
-					{
-						int i=stt.executeUpdate("Delete from Reservas where ID="+ID_reserva+" and DNI='"+DNI+";");
-						if(i<0)
-						{
-							System.out.println("Error al eliminar la Reserva");
-							return -1;
-						}
-						else
-						{
-							System.out.println("Reserva eliminada correctamente");
-							return 1;
-						}
-					}
+					precio=cstmt.getInt(2);
+					retencion=cstmt.getInt(3);
+					if(precio==-2 || precio==-1)
+						return precio;
 					else
-					{
-						if(precio==-2)
-						{
-							System.out.println("El evento ya se ha celebrado, el dinero no será devuelto");
-							return -2;
-						}
-						else
-						{
-							if(precio==-3)
-							{
-								System.out.println("Error al introducir la ID de reserva");
-								return -3;
-							}
-							else
-							{
-								if(retencion==1)
-								{
-									System.out.println("Ha superado la fecha de validez, le devolveremos un porcentaje del importe total");
-								}	
-									System.out.println("\n\nEstamos abonando el importe de la reserva: "+ID_reserva+".");
-									System.out.println("\tTotal: "+precio+"\n");
-									
-									for(int i=0; i<5; i++)
-									 {
-										System.out.print(".");
-										Thread.sleep(1000);
-									 }
-									
-									
-									int i=stt.executeUpdate("Delete from Reservas where ID="+ID_reserva+" and DNI='"+DNI+";");
-									if(i<0)
-									{
-										System.out.println("Error al eliminar la Reserva");
-										return -1;
-									}
-									else
-									{
-										System.out.println("Devolución realizada correctamente");
-										System.out.println("Reserva eliminada correctamente");
-										return 1;
-									}
-							}
-						}
-					}
+					 {
+						int error =stt.executeUpdate("Delete from Reservas where ID="+ID_reserva+" and DNI_cliente='"+DNI+"';");
+						if(error<0)
+							return -3;
+						
+						if(precio>0)
+						 {
+							System.out.println("\n\nEstamos abonando el importe de la reserva: "+ID_reserva+".");
+							System.out.println("\tTotal: "+precio+"\n");
+							for(int i=0; i<5; i++)
+							 {
+								System.out.print(".");
+								Thread.sleep(1000);
+							 }
+							if(retencion==1)
+								return 2;
+						 }
+						else if(precio==-3)
+							return 3;
+					 }
 				 }
 				else
 				 {
 					return -1;
 				 }
-		}
+		 }
 		catch(SQLException se)
 		 {
 			System.out.println("SQLException: " + se.getMessage());
 		    System.out.println("SQLState: " + se.getSQLState());
 		    System.out.println("VendorError: " + se.getErrorCode());
+		    return -100;
 		 }
 		catch(Exception e)
 		 {
 			e.printStackTrace();
+			return -100;
 		 }
-		return 0;
+		return 1;
 	 }
+	
 	
 	
 	
@@ -656,6 +641,7 @@ public class Principal {
 	 *		  -12 -> La grada donde se situa esta localidad no está disponible en este evento para el usuario indicado.
 	 *		  -13 -> La localidad está deteriorada.
 	 *		  -14 -> La localidad no existe para esta grada.
+	 *		 -100 -> Excepción
 	 */
 	public int modificarEntrada(int ID_entrada, int ID_localidad_nueva, String Tipo_usuario_nuevo)
 	 {
@@ -689,10 +675,12 @@ public class Principal {
 			System.out.println("SQLException: " + se.getMessage());
 		    System.out.println("SQLState: " + se.getSQLState());
 		    System.out.println("VendorError: " + se.getErrorCode());
+		    return -100;
 		 }
 		catch(Exception e)
 		 {
 			System.out.println("Error: "+e.getMessage());
+			return -100;
 		 }
 		
 		if(salida<=0)
