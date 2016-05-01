@@ -33,10 +33,11 @@ public class Principal {
 	
 	public static void main(String[] args) {
 		
-		conectar();
-	    Principal  p = new Principal();
-	    //p.lanzar();
-	    p.menu();
+		boolean exito = conectar();
+		if(exito){
+			Principal  p = new Principal();
+			p.menu();
+		}
 	}
 
 	
@@ -44,7 +45,7 @@ public class Principal {
 	 * Permite conectarse con la base de datos utilizando los parÃ¡metros globales de la clase.
 	 * AÃ±ade el objeto conexiÃ³n como variable de la clase para que todos los mÃ©todos puedan acceder.
 	 */
-	public static void conectar()
+	public static boolean conectar()
 	 {
 		conn = null;
 		try
@@ -71,73 +72,10 @@ public class Principal {
 		else
 		 {
 			System.out.println("Error de conexiÃ³n.");
-			return;
+			return false;
 		 }		 
-	 }
-	
-	/**
-	 * MÃ©todo para realizar temporalmente las pruebas de los diferentes mÃ©todos del sistema.
-	 */
-	@SuppressWarnings("deprecation")
-	public void lanzar()
-	 {
-		 		
-		DNI="12345678A";
 		
-	    HashMap<Integer, String> mapa = new  HashMap<Integer, String>();
-		
-		mapa.put(4, "Adulto");
-		mapa.put(12, "Adulto");
-		mapa.put(3, "Adulto");
-		mapa.put(1, "Adulto");
-		mapa.put(2, "Adulto");
-		mapa.put(5, "Adulto");
-		mapa.put(6, "Adulto");
-		
-		
-		//System.out.println(reservarEntradas(8, "Patio butacas", mapa));
-		 
-		
-		//System.out.println(pagarReserva(37));
-		/*
-		ArrayList<Grada> gradas = new ArrayList<Grada>();
-		gradas = listarGradas(4);
-		
-		for(int i=0; i<gradas.size(); i++)
-			System.out.println(gradas.get(i));
-			*/
-		
-		//System.out.println(modificarEntrada(17, 0, ""));
-		/*
-		ArrayList<Evento> eventos = new ArrayList<Evento>();
-		Date f = new Date();
-		f.setDate(30);
-		f.setHours(16);
-		f.setMinutes(00);
-		f.setSeconds(05);
-		eventos = listarEventos(0,"",0, f);
-		for(int i=0; i<eventos.size(); i++)
-			System.out.println(eventos.get(i));
-		
-		*/
-		
-		ArrayList<Reserva> reservas= new ArrayList<Reserva>();
-		reservas = listarReserva();
-		
-		for(int i=0; i<reservas.size(); i++)
-			System.out.println(reservas.get(i));
-		
-		/*
-		ArrayList<Espectaculo> espectaculos= new ArrayList<Espectaculo>();
-		espectaculos = listarEspectaculos("El Rey LeÃ³n", "");
-		
-		for(int i=0; i<espectaculos.size(); i++)
-			System.out.println(espectaculos.get(i).toString());
-		*/
-		
-		
-		System.out.println(anularReserva(30));
-		
+		return true;
 	 }
 	
 	
@@ -657,7 +595,7 @@ public class Principal {
 		try
 		 {
 		     
-		     String query = "SELECT DNI FROM Entradas,Reservas WHERE Entradas.ID="+ID_entrada+" AND Entradas.ID_reserva=Reservas.ID AND Reservas.DNI="+DNI+";";
+		     String query = "SELECT DNI_cliente FROM Entradas,Reservas WHERE Entradas.ID="+ID_entrada+" AND Entradas.ID_reserva=Reservas.ID AND Reservas.DNI_cliente='"+DNI+"';";
 		     Statement st = conn.createStatement();
 		     error = st.executeQuery(query);
 		     if(!error.next()) return -1;
@@ -701,10 +639,10 @@ public class Principal {
 		int opcion = -1;
 		DNI="12345678A";
 		while(opcion != -100){
-			System.out.println("*********************************************");
-			System.out.println("**Bienvenido al sistema de taquilla virtual**");
-			System.out.println("**Seleccione una opción**");
-			System.out.println("*********************************************");
+			printSeparador();
+			print("**Bienvenido al sistema de taquilla virtual**");
+			print("**Seleccione una opción**");
+			printSeparador();
 			switch(opcion){
 				case -1: opcion = menuPrincipal(reader);
 					break;
@@ -722,15 +660,18 @@ public class Principal {
 	}
 	
 	int menuPrincipal(BufferedReader reader){
-		System.out.println("1)Buscar espectáculos");
-		System.out.println("2)Buscar eventos");
-		System.out.println("3)Gestion de mi cuenta");
-		System.out.println("4)Salir");
-		System.out.println("");
+		print("1)Buscar espectáculos");
+		print("2)Buscar eventos");
+		print("3)Gestion de mi cuenta");
+		print("4)Salir");
+		print("");
 		try {
-			int temp = Integer.parseInt(reader.readLine());
+			String sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return -1;
+			int temp = Integer.parseInt(sTemp);
 			if(temp < 1 || temp > 4){
-				System.out.println("Opción no válida vuelve a intentarlo");
+				print("Opción no válida vuelve a intentarlo");
 				return -1;
 			}
 			if(temp == 4)
@@ -741,59 +682,31 @@ public class Principal {
 			return -100;
 		}
 	}
-	
-	int gestionCuenta(BufferedReader reader){
-		System.out.println("1) Gestionar reservas");
-		System.out.println("2) Salir");
-		try {
-			int temp = Integer.parseInt(reader.readLine());
-			if(temp == 2)
-				return -100;
-			if(temp == 1){
-				gestionReservas(reader);
-				return -1;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return -1;
-		}
-		return -1;
-	}
-	
-	void gestionReservas(BufferedReader reader){
-		ArrayList<Reserva> lista = listarReserva();
-		for(Reserva res : lista){
-			System.out.println(res.toString());
-			System.out.println("");
-		}
-		System.out.println("");
-	}
-	
+	//**************PARTE DEL MENU DE RESERVAR ENTRADAS*****************
 	int verEspectaculos(BufferedReader reader){
 		String nombre = null;
 		String tipo = null;
 		int ID = -1;
 		try{
-			System.out.println("Introduzca un nombre, deje vacío si no importa");
+			print("Introduzca un nombre, deje vacío si no importa");
 			nombre = reader.readLine();
-			System.out.println("Introduzca un tipo, deje vacío si no importa");
+			print("Introduzca un tipo, deje vacío si no importa");
 			tipo = reader.readLine();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		ArrayList<Espectaculo> lista = listarEspectaculos(nombre,tipo);
 		for(Espectaculo es : lista){
-			System.out.println(es.toString());
+			print(es.toString());
 		}
-		System.out.println("");
+		print("");
 		try{
-			System.out.println("Introduzca numero de espectáculo para ver eventos de ese espectáculo (enter para salir)");
+			print("Introduzca numero de espectáculo para ver eventos de ese espectáculo (enter para salir)");
 			String temp = null;
 			temp = reader.readLine();
 			if(temp == null || temp.equals(""))
 				return -1;
 			ID = Integer.parseInt(temp);
-			verEventos(reader,ID);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -802,32 +715,32 @@ public class Principal {
 	}
 	
 	void verEventos(BufferedReader reader,int ID){
-		System.out.println("");
+		print("");
 		String ciudad = null;
 		int IDRecinto = 0;
 		Date fecha = null;
 		try{
 			String temp = null;
 			if(ID == -1){
-				System.out.println("Introduzca ID del espectáculo, deje vacío si no importa");
+				print("Introduzca ID del espectáculo, deje vacío si no importa");
 				temp = reader.readLine();
 				if(temp != null && !temp.equals(""))
 					ID = Integer.parseInt(temp);
 				else
 					ID = 0;
 			}
-			System.out.println("Introduzca ciudad, deje vacío si no importa");
+			print("Introduzca ciudad, deje vacío si no importa");
 			ciudad = reader.readLine();
-			System.out.println("Introduzca ID del recinto, deje vacío si no importa");
+			print("Introduzca ID del recinto, deje vacío si no importa");
 			temp = reader.readLine();
 			if(temp != null && !temp.equals(""))
 				IDRecinto = Integer.parseInt(temp);
-			System.out.println("Introduzca fecha (dd/mm/yyyy), deje vacío si no importa");
+			print("Introduzca fecha (dd/mm/yyyy), deje vacío si no importa");
 			temp = reader.readLine();
 			SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 			if(temp != null && !temp.equals("")){
 				fecha = format.parse(temp);
-				//System.out.println("YOOOLOO::" + fecha.getYear());
+				//print("YOOOLOO::" + fecha.getYear());
 			}
 			
 		}catch(Exception e){
@@ -835,10 +748,10 @@ public class Principal {
 		}
 		ArrayList<Evento> eventos = listarEventos(ID,ciudad,IDRecinto,fecha);
 		for(Evento ev : eventos)
-			System.out.println(ev.toString());
-		System.out.println("*****************************");
-		System.out.println("Introduzca ID de evento para ver sus gradas y precios disponibles (enter para salir)");
-		System.out.println("");
+			print(ev.toString());
+		print("*****************************");
+		print("Introduzca ID de evento para ver sus gradas y precios disponibles (enter para salir)");
+		print("");
 		String temp = "";
 		int IDEv = -1;
 		try{
@@ -849,44 +762,51 @@ public class Principal {
 		if(temp.equals(""))
 			return;
 		IDEv = Integer.parseInt(temp);
-		verGradas(reader,IDEv);
+		verGradas(reader,IDEv,false);
 	}
 	
-	void verGradas(BufferedReader reader,int IDEv){
+	//Devuelve un int para el caso de estar modificando
+	int verGradas(BufferedReader reader,int IDEv,boolean modificando){
 		ArrayList<Grada> gradas = listarGradas(IDEv);
 		for(Grada g : gradas){
-			System.out.println(g.toString());
+			print(g.toString());
 		}
-		System.out.println("****************************************************");
-		System.out.println("Escriba nombre de la grada para ver sus localidades libres");
+		print("****************************************************");
+		print("Escriba nombre de la grada para ver sus localidades libres");
 		try{
 			String nombre = reader.readLine();
 			ArrayList<Localidad> localidades = listarLocalidades(IDEv,nombre);
 			for(Localidad l : localidades){
-				System.out.println(l.toString());
+				print(l.toString());
 			}
-			System.out.println("**************************");
-			menuReservas(reader,IDEv,nombre);
+			print("**************************");
+			return menuCompraReservas(reader,IDEv,nombre,modificando);
 		}catch(IOException io){
 			io.printStackTrace();
 		}
+		return 0;
 	}
-	void menuReservas(BufferedReader reader,int IDEv,String nombre){
+	
+	//Devuelve un int para el caso de estar modificando
+	int menuCompraReservas(BufferedReader reader,int IDEv,String nombre,boolean modificando){
+		
 		String temp = "-1";
 		HashMap<Integer,String> mapa = new HashMap<Integer,String>();
 		try{
 			while(true){
-				System.out.println("Introduzca localidad a reservar (enter para terminar)");
+				print("Introduzca localidad a reservar (enter para terminar)");
 				temp = reader.readLine();
 				if(temp.equals(""))
 					break;
 				int IDLoc = Integer.parseInt(temp);
-				System.out.println("Quien va a asistir?");
-				System.out.println("1) Adulto");
-				System.out.println("2) Infantil");
-				System.out.println("3) Parado");
-				System.out.println("4) Jubilado");
-				System.out.println("5) Bebe");
+				if(modificando)
+					return IDLoc;
+				print("Quien va a asistir?");
+				print("1) Adulto");
+				print("2) Infantil");
+				print("3) Parado");
+				print("4) Jubilado");
+				print("5) Bebe");
 				String usuario = "";
 				temp = reader.readLine();
 				int tempI = Integer.parseInt(temp);
@@ -912,45 +832,327 @@ public class Principal {
 			if(!mapa.isEmpty()){
 				int resultado = reservarEntradas(IDEv,nombre,mapa);
 				if(resultado >= 0){
-					System.out.println("Perfecto, su ID de reserva es: " + resultado);
-					return;
+					print("Perfecto, su ID de reserva es: " + resultado);
+					return 0;
 				}
 				
 				switch(resultado){
 				case -1:
-					System.out.println("El DNI introducido no existe para ningún cliente");
+					print("El DNI introducido no existe para ningún cliente");
 					break;
 				case -2:
-					System.out.println("No existe el evento introducido");
+					print("No existe el evento introducido");
 					break;
 				case -3:
-					System.out.println("No existe la reserva introducida");
+					print("No existe la reserva introducida");
 					break;
 				case -4:
-					System.out.println("No puede añadir entradas a una reserva");
+					print("No puede añadir entradas a una reserva");
 					break;
 				case -5:
-					System.out.println("Error de SQL");
+					print("Error de SQL");
 					break;
 				case -11:
-					System.out.println("La localidad está ocupada");
+					print("La localidad está ocupada");
 					break;
 				case -12:
-					System.out.println("La grada donde se situa esta localidad no está disponible en este evento para el usuario indicado");
+					print("La grada donde se situa esta localidad no está disponible en este evento para el usuario indicado");
 					break;
 				case -13:
-					System.out.println("La localidad está deteriorarada");
+					print("La localidad está deteriorarada");
 					break;
 				case -14:
-					System.out.println("La localidad no existe para esta grada");
+					print("La localidad no existe para esta grada");
 					break;
 				default: 
-					System.out.println("Error desconocido");
+					print("Error desconocido");
 					break;
-			}
+				}
 			}
 		}catch(Exception e){
-			
+			e.printStackTrace();
 		}
+		return 0;
+	}
+	
+	//**************PARTE DEL MENÚ DE TU CUENTA**********************
+	int gestionCuenta(BufferedReader reader){
+		print("1) Gestionar reservas");
+		print("2) Salir");
+		try {
+			int temp = Integer.parseInt(reader.readLine());
+			if(temp == 2)
+				return -100;
+			if(temp == 1){
+				gestionReservas(reader);
+				return -1;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+		return -1;
+	}
+	
+	void gestionReservas(BufferedReader reader){
+		try{
+			while(true){
+				printSeparador();
+				print("1) Mostrar tus reservas");
+				print("2) Pagar una reserva");
+				print("3) Modificar una reserva");
+				print("Enter para salir");
+				print("Se recomienda mostrar las reservas si no recuerda su ID");
+				printSeparador();
+				String temp = reader.readLine();
+				if(temp.equals(""))
+					return;
+				int i = Integer.parseInt(temp);
+				switch(i){
+					case 1:
+						mostrarReservas(reader);
+						break;
+					case 2: menuPagarReserva(reader);
+						break;
+					case 3:	menuModificarReserva(reader);
+						break;
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	void mostrarReservas(BufferedReader reader){
+		ArrayList<Reserva> lista = listarReserva();
+		for(Reserva res : lista){
+			print(res.toString());
+			print("");
+		}
+		print("");
+		printSeparador();
+		print("1) Pagar una reserva");
+		print("2) Modificar una reserva");
+		print("Enter para salir");
+		printSeparador();
+		try{
+			String temp = reader.readLine();
+			if(temp.equals(""))
+				return;
+			int i = Integer.parseInt(temp);
+			switch(i){
+				case 1: menuPagarReserva(reader);
+					break;
+				case 2: menuModificarReserva(reader);
+					break;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	void menuPagarReserva(BufferedReader reader){
+		printSeparador();
+		print("Introduzca ID de reserva, si lo deja vacío saldrá");
+		printSeparador();
+		try{
+			String sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return;
+			int id = Integer.parseInt(sTemp);
+			int resultado = pagarReserva(id);
+			switch(resultado){
+				case 1: print("Pago realizado correctamente");
+					return;
+				case -1: print("Error. Esta reserva no existe para este cliente");
+					break;
+				case -2: print("Error. Reserva ya pagada");
+					break;
+				case -3: print("Error. Intentar pagar de forma no aceptada");
+					break;
+				case -100: print("Excepcion");
+					break;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	void menuModificarReserva(BufferedReader reader){
+		printSeparador();
+		print("Introduzca ID de reserva, si lo deja vacío saldrá");
+		printSeparador();
+		try{
+			String sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return;
+			int id = Integer.parseInt(sTemp);
+			printSeparador();
+			print("Esta es tu reserva");
+			printSeparador();
+			ArrayList<Reserva> reservas = listarReserva();
+			for(Reserva r : reservas){
+				if(r.getID() == id)
+					print(r.toString());
+			}
+			printSeparador();
+			print("1) Modificar entradas");
+			print("2) Anular reserva");
+			print("Enter para salir");
+			printSeparador();
+			sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return;
+			int opcion = Integer.parseInt(sTemp);
+			switch(opcion){
+				case 1: menuModificarEntradas(reader, id);
+					break;
+				case 2: menuAnularReserva(id);
+					break;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	void menuModificarEntradas(BufferedReader reader, int idReserva){
+		printSeparador();
+		print("Introduzca ID de la entrada a modificar");
+		print("Enter para salir");
+		printSeparador();
+		int idEntrada;
+		try{
+			String sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return;
+			idEntrada = Integer.parseInt(sTemp);
+		}catch(Exception e){
+			e.printStackTrace();
+			return;
+		}
+		
+		printSeparador();
+		print("1) Cambiar localidad entrada");
+		print("2) Cambiar tipo de usuario de entrada");
+		print("3) Cambiar ambas");
+		print("4) Eliminar entrada");
+		print("Enter para salir");
+		printSeparador();
+		
+		try{
+			String sTemp = reader.readLine();
+			if(sTemp.equals(""))
+				return;
+			int iTemp = Integer.parseInt(sTemp);
+			int idLoc;
+			String usu;
+			switch(iTemp){
+				case 1: 
+					idLoc = menuCambiarLocalidad(reader, idReserva);
+					modificarEntrada(idEntrada,idLoc,"");
+					break;
+				case 2: 
+					usu = menuCambiarTipoUsuario(reader);
+					modificarEntrada(idEntrada,0,usu);
+					break;
+				case 3: 
+					idLoc = menuCambiarLocalidad(reader, idReserva);
+					usu = menuCambiarTipoUsuario(reader);
+					modificarEntrada(idEntrada,idLoc,usu);
+					break;
+				case 4: 
+					eliminarEntrada(idReserva,idEntrada);
+					break;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			return;
+		}
+	}
+	
+	int menuCambiarLocalidad(BufferedReader reader, int idReserva){
+		ArrayList<Reserva> reservas = listarReserva();
+		int idEv = 0;
+		for(Reserva r: reservas){
+			if(r.getID() == idReserva){
+				idEv = r.getID_evento();
+				break;
+			}
+		}
+		return verGradas(reader,idEv,true);
+	}
+	
+	String menuCambiarTipoUsuario(BufferedReader reader){
+		printSeparador();
+		print("El nuevo usuario de esta localidad es...");
+		print("1) Adulto");
+		print("2) Infantil");
+		print("3) Parado");
+		print("4) Jubilado");
+		print("5) Bebe");
+		print("Enter para salir");
+		printSeparador();
+		String usuario = "";
+		String temp = "";
+		try {
+			temp = reader.readLine();
+			if(temp.equals(""))
+				return "";
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "";
+		}
+		int tempI = Integer.parseInt(temp);
+		switch(tempI){
+			case 2:
+				usuario = "Infantil";
+				break;
+			case 3:
+				usuario = "Parado";
+				break;
+			case 4:
+				usuario = "Jubilado";
+				break;
+			case 5:
+				usuario = "Bebe";
+				break;
+			default:
+				usuario = "Adulto";
+				break;
+		}
+		return usuario;
+	}
+	
+	void eliminarEntrada(int idReserva, int idEntrada){
+		printSeparador();
+		print("ELIMINO ENTRADA TURURURURU");
+		printSeparador();
+	}
+	void menuAnularReserva(int id){
+		int resultado = anularReserva(id);
+		switch(resultado){
+			case 1: print(" La reserva se ha anulado corrrectamente. (Se devuelve el importe íntegro)");
+				break;
+			case 2: print(" La reserva se ha anulado corrrectamente. (Se devuelve un porcentaje del importe débido a superar la fecha de validez)");
+				break;
+			case 3: print("La pre-reserva se ha anulado correctamente");
+				break;
+			case -1: print("Error. No tiene ninguna reserva con este ID");
+				break;
+			case  -2: print("Error. No se puede eliminar porque el evento ya se ha celebrado");
+				break;
+			case -3: print("Error al eliminar la reserva");
+				break;
+			default: print("Expcepción");
+				break;
+		}
+	}
+	//FUNCIONES WRAPPER
+	void print(String s){
+		System.out.println(s);
+	}
+	
+	void printSeparador(){
+		print("********************************************");
 	}
 }
