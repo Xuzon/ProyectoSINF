@@ -3,7 +3,7 @@ public class Espectaculo {
 	
 	private int ID;
 	private String Nombre;
-	private String Descripción;
+	private String Descripcion;
 	private String Tipo;
 
     public Espectaculo()
@@ -11,11 +11,11 @@ public class Espectaculo {
          super();
      }
 
-	public Espectaculo(int iD, String nombre, String descripción, String tipo) {
+	public Espectaculo(int iD, String nombre, String descripcion, String tipo) {
 		super();
 		ID = iD;
 		Nombre = nombre;
-		Descripción = descripción;
+		Descripcion = descripcion;
 		Tipo = tipo;
 	}
 
@@ -35,12 +35,12 @@ public class Espectaculo {
 		Nombre = nombre;
 	}
 
-	public String getDescripción() {
-		return Descripción;
+	public String getDescripcion() {
+		return Descripcion;
 	}
 
-	public void setDescripción(String descripción) {
-		Descripción = descripción;
+	public void setDescripcion(String descripcion) {
+		Descripcion = descripcion;
 	}
 
 	public String getTipo() {
@@ -54,7 +54,7 @@ public class Espectaculo {
 	@Override
 	public String toString() {
 		return "Espectaculo [ID=" + ID + ", Nombre=" + Nombre
-				+ ", Descripción=" + Descripción + ", Tipo=" + Tipo + "]";
+				+ ", Descripción=" + Descripcion + ", Tipo=" + Tipo + "]";
 	}
 	
 	

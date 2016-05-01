@@ -8,7 +8,7 @@ public class Evento {
 	private Date fecha_inicio;
 	private Date fecha_fin;
 	private Date validez;
-	private int porcentaje_devolución;
+	private int porcentaje_devolucion;
 	
 
 	public Evento()
@@ -18,14 +18,14 @@ public class Evento {
 	
 	
 	public Evento(int iD, int iD_recinto, Date fecha_inicio, Date fecha_fin,
-			Date validez, int porcentaje_devolución) {
+			Date validez, int porcentaje_devolucion) {
 		super();
 		ID = iD;
 		ID_recinto = iD_recinto;
 		this.fecha_inicio = fecha_inicio;
 		this.fecha_fin = fecha_fin;
 		this.validez = validez;
-		this.porcentaje_devolución = porcentaje_devolución;
+		this.porcentaje_devolucion = porcentaje_devolucion;
 	}
 	
 	
@@ -59,11 +59,11 @@ public class Evento {
 	public void setValidez(Date validez) {
 		this.validez = validez;
 	}
-	public int getPorcentaje_devolución() {
-		return porcentaje_devolución;
+	public int getPorcentaje_devolucion() {
+		return porcentaje_devolucion;
 	}
-	public void setPorcentaje_devolución(int porcentaje_devolución) {
-		this.porcentaje_devolución = porcentaje_devolución;
+	public void setPorcentaje_devolucion(int porcentaje_devolucion) {
+		this.porcentaje_devolucion = porcentaje_devolucion;
 	}
 
 
@@ -72,7 +72,7 @@ public class Evento {
 		return "Evento [ID=" + ID + ", ID_recinto=" + ID_recinto
 				+ ", fecha_inicio=" + fecha_inicio + ", fecha_fin=" + fecha_fin
 				+ ", validez=" + validez + ", porcentaje_devolución="
-				+ porcentaje_devolución + "]";
+				+ porcentaje_devolucion + "]";
 	}
 	
 

@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -5,11 +8,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import javax.swing.text.DateFormatter;
 
 
 public class Principal {
@@ -29,7 +35,8 @@ public class Principal {
 		
 		conectar();
 	    Principal  p = new Principal();
-	    p.lanzar();
+	    //p.lanzar();
+	    p.menu();
 	}
 
 	
@@ -270,7 +277,7 @@ public class Principal {
 				
 				if(!nombre.equals(nombre_ant))
 				 {	
-					grada = new Grada(nombre, result.getInt("NÂº_max_localidades"));
+					grada = new Grada(nombre, result.getInt("Nº_max_localidades"));
 				 }
 				
 				grada.addPU(result.getString("Tipo_usuario"), result.getInt("Precio"));
@@ -316,10 +323,10 @@ public class Principal {
 		
 		String query = "";
 		query = "SELECT L.* FROM Localidades as L, Precios_Usuarios as PU" +
-				" WHERE PU.Nombre_grada=L.Nombre_grada AND L.Nombre_grada="+Nombre_grada+" AND PU.ID_evento="+ID_evento+
+				" WHERE PU.Nombre_grada=L.Nombre_grada AND L.Nombre_grada='"+Nombre_grada+"' AND PU.ID_evento="+ID_evento+
 				" AND L.Estado=1 AND L.ID NOT IN (SELECT E.ID_localidad FROM Entradas as E, Reservas as R, Eventos as EV" +
-					" WHERE E.ID_reserva=R.ID AND R.ID_evento=EV.ID AND ID_evento="+ID_evento+" AND Nombre_grada="+Nombre_grada+
-					" AND TIMESTAMPDIFF(MINUTE, R.Fecha, NOW())/60<Duracion_max_pre_reserva)" +
+					" WHERE E.ID_reserva=R.ID AND R.ID_evento=EV.ID AND ID_evento="+ID_evento+" AND Nombre_grada='"+Nombre_grada+
+					"' AND TIMESTAMPDIFF(MINUTE, R.Fecha, NOW())/60<Duracion_max_pre_reserva)" +
 				" GROUP BY ID;";
 		
 		try
@@ -688,6 +695,262 @@ public class Principal {
 		else
 		    return 1;
 	 }
+	 
+	void menu(){
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		int opcion = -1;
+		DNI="12345678A";
+		while(opcion != -100){
+			System.out.println("*********************************************");
+			System.out.println("**Bienvenido al sistema de taquilla virtual**");
+			System.out.println("**Seleccione una opción**");
+			System.out.println("*********************************************");
+			switch(opcion){
+				case -1: opcion = menuPrincipal(reader);
+					break;
+				case 1: opcion = verEspectaculos(reader);
+					break;
+				case 2: verEventos(reader,-1);
+					opcion = -1;
+					break;
+				case 3: opcion =  gestionCuenta(reader);
+					break;
+				default: opcion = -1;
+					break;
+			}
+		}
+	}
 	
+	int menuPrincipal(BufferedReader reader){
+		System.out.println("1)Buscar espectáculos");
+		System.out.println("2)Buscar eventos");
+		System.out.println("3)Gestion de mi cuenta");
+		System.out.println("4)Salir");
+		System.out.println("");
+		try {
+			int temp = Integer.parseInt(reader.readLine());
+			if(temp < 1 || temp > 4){
+				System.out.println("Opción no válida vuelve a intentarlo");
+				return -1;
+			}
+			if(temp == 4)
+				return -100;
+			return temp;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return -100;
+		}
+	}
 	
+	int gestionCuenta(BufferedReader reader){
+		System.out.println("1) Gestionar reservas");
+		System.out.println("2) Salir");
+		try {
+			int temp = Integer.parseInt(reader.readLine());
+			if(temp == 2)
+				return -100;
+			if(temp == 1){
+				gestionReservas(reader);
+				return -1;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
+		return -1;
+	}
+	
+	void gestionReservas(BufferedReader reader){
+		ArrayList<Reserva> lista = listarReserva();
+		for(Reserva res : lista){
+			System.out.println(res.toString());
+			System.out.println("");
+		}
+		System.out.println("");
+	}
+	
+	int verEspectaculos(BufferedReader reader){
+		String nombre = null;
+		String tipo = null;
+		int ID = -1;
+		try{
+			System.out.println("Introduzca un nombre, deje vacío si no importa");
+			nombre = reader.readLine();
+			System.out.println("Introduzca un tipo, deje vacío si no importa");
+			tipo = reader.readLine();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		ArrayList<Espectaculo> lista = listarEspectaculos(nombre,tipo);
+		for(Espectaculo es : lista){
+			System.out.println(es.toString());
+		}
+		System.out.println("");
+		try{
+			System.out.println("Introduzca numero de espectáculo para ver eventos de ese espectáculo (enter para salir)");
+			String temp = null;
+			temp = reader.readLine();
+			if(temp == null || temp.equals(""))
+				return -1;
+			ID = Integer.parseInt(temp);
+			verEventos(reader,ID);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		verEventos(reader,ID);
+		return -1;
+	}
+	
+	void verEventos(BufferedReader reader,int ID){
+		System.out.println("");
+		String ciudad = null;
+		int IDRecinto = 0;
+		Date fecha = null;
+		try{
+			String temp = null;
+			if(ID == -1){
+				System.out.println("Introduzca ID del espectáculo, deje vacío si no importa");
+				temp = reader.readLine();
+				if(temp != null && !temp.equals(""))
+					ID = Integer.parseInt(temp);
+				else
+					ID = 0;
+			}
+			System.out.println("Introduzca ciudad, deje vacío si no importa");
+			ciudad = reader.readLine();
+			System.out.println("Introduzca ID del recinto, deje vacío si no importa");
+			temp = reader.readLine();
+			if(temp != null && !temp.equals(""))
+				IDRecinto = Integer.parseInt(temp);
+			System.out.println("Introduzca fecha (dd/mm/yyyy), deje vacío si no importa");
+			temp = reader.readLine();
+			SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+			if(temp != null && !temp.equals("")){
+				fecha = format.parse(temp);
+				//System.out.println("YOOOLOO::" + fecha.getYear());
+			}
+			
+		}catch(Exception e){
+			
+		}
+		ArrayList<Evento> eventos = listarEventos(ID,ciudad,IDRecinto,fecha);
+		for(Evento ev : eventos)
+			System.out.println(ev.toString());
+		System.out.println("*****************************");
+		System.out.println("Introduzca ID de evento para ver sus gradas y precios disponibles (enter para salir)");
+		System.out.println("");
+		String temp = "";
+		int IDEv = -1;
+		try{
+			temp = reader.readLine();
+		}catch(IOException io){
+			io.printStackTrace();
+		}
+		if(temp.equals(""))
+			return;
+		IDEv = Integer.parseInt(temp);
+		verGradas(reader,IDEv);
+	}
+	
+	void verGradas(BufferedReader reader,int IDEv){
+		ArrayList<Grada> gradas = listarGradas(IDEv);
+		for(Grada g : gradas){
+			System.out.println(g.toString());
+		}
+		System.out.println("****************************************************");
+		System.out.println("Escriba nombre de la grada para ver sus localidades libres");
+		try{
+			String nombre = reader.readLine();
+			ArrayList<Localidad> localidades = listarLocalidades(IDEv,nombre);
+			for(Localidad l : localidades){
+				System.out.println(l.toString());
+			}
+			System.out.println("**************************");
+			menuReservas(reader,IDEv,nombre);
+		}catch(IOException io){
+			io.printStackTrace();
+		}
+	}
+	void menuReservas(BufferedReader reader,int IDEv,String nombre){
+		String temp = "-1";
+		HashMap<Integer,String> mapa = new HashMap<Integer,String>();
+		try{
+			while(true){
+				System.out.println("Introduzca localidad a reservar (enter para terminar)");
+				temp = reader.readLine();
+				if(temp.equals(""))
+					break;
+				int IDLoc = Integer.parseInt(temp);
+				System.out.println("Quien va a asistir?");
+				System.out.println("1) Adulto");
+				System.out.println("2) Infantil");
+				System.out.println("3) Parado");
+				System.out.println("4) Jubilado");
+				System.out.println("5) Bebe");
+				String usuario = "";
+				temp = reader.readLine();
+				int tempI = Integer.parseInt(temp);
+				switch(tempI){
+					case 2:
+						usuario = "Infantil";
+						break;
+					case 3:
+						usuario = "Parado";
+						break;
+					case 4:
+						usuario = "Jubilado";
+						break;
+					case 5:
+						usuario = "Bebe";
+						break;
+					default:
+						usuario = "Adulto";
+						break;
+				}
+				mapa.put(IDLoc, usuario);
+			}
+			if(!mapa.isEmpty()){
+				int resultado = reservarEntradas(IDEv,nombre,mapa);
+				if(resultado >= 0){
+					System.out.println("Perfecto, su ID de reserva es: " + resultado);
+					return;
+				}
+				
+				switch(resultado){
+				case -1:
+					System.out.println("El DNI introducido no existe para ningún cliente");
+					break;
+				case -2:
+					System.out.println("No existe el evento introducido");
+					break;
+				case -3:
+					System.out.println("No existe la reserva introducida");
+					break;
+				case -4:
+					System.out.println("No puede añadir entradas a una reserva");
+					break;
+				case -5:
+					System.out.println("Error de SQL");
+					break;
+				case -11:
+					System.out.println("La localidad está ocupada");
+					break;
+				case -12:
+					System.out.println("La grada donde se situa esta localidad no está disponible en este evento para el usuario indicado");
+					break;
+				case -13:
+					System.out.println("La localidad está deteriorarada");
+					break;
+				case -14:
+					System.out.println("La localidad no existe para esta grada");
+					break;
+				default: 
+					System.out.println("Error desconocido");
+					break;
+			}
+			}
+		}catch(Exception e){
+			
+		}
+	}
 }
