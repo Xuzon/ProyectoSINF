@@ -42,9 +42,7 @@ public void setTipo_usuario(String tipo_usuario) {
 
 @Override
 public String toString() {
-	return "Entrada [ID=" + ID + ", ID_localidad=" + ID_localidad
-			+ ", nombre_grada=" + nombre_grada + ", tipo_usuario="
-			+ tipo_usuario + "]";
+	return ID + "\t   " + ID_localidad + "\t\t   " + tipo_usuario ;
 }
 }
 

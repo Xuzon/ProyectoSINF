@@ -1,18 +1,26 @@
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class Reserva {
 	private int ID;
 	private String DNI_cliente;
 	private int ID_evento;
+	private Date fecha;
 	private boolean pagada;
+	private int precio;
+	private String nombre_evento;
+	private String nombre_grada;
 	private ArrayList <Entrada> lista_entradas= new ArrayList <Entrada>();
-	public Reserva(int id,String dni,int id_evento,boolean pagado)
+	public Reserva(int id,String dni,int id_evento, String nombre_evento, Date fecha, boolean pagado, int precio)
 	{
 		ID=id;
 		DNI_cliente=dni;
 		ID_evento=id_evento;
+		this.fecha=fecha;
 		pagada=pagado;
+		this.nombre_evento=nombre_evento;
+		this.precio = precio;
 	}
 	public int getID() {
 		return ID;
@@ -41,6 +49,7 @@ public class Reserva {
 	public void add_entrada(int iD_entrada, int iD_localidad, String nombre_grada,
 			String tipo_usuario)
 	 {
+		this.nombre_grada=nombre_grada;
 		Entrada entrada= new Entrada(iD_entrada,iD_localidad,nombre_grada,tipo_usuario);
 		lista_entradas.add(entrada);
 	 }
@@ -51,15 +60,23 @@ public class Reserva {
 	@Override
 	public String toString() {
 		 String retorno = "";
-		 retorno = "Reserva [ID=" + ID + ", DNI_cliente=" + DNI_cliente
-				+ ", ID_evento=" + ID_evento + ", pagada=" + pagada;
+		 retorno = "ID=" + ID + ", " +
+		 		"Evento=" + nombre_evento + ", Nombre Grada=" + nombre_grada + ", Fecha="+ fecha + ", pagada=" + pagada + ", precio="+precio+"€";
+		 		retorno+="\n\t\t\tID\tID localidad\tTipo Usuario";
+		 		retorno+="\n\t\t\t------------------------------------";
 		 for(int i=0; i<lista_entradas.size(); i++)
 		  {
 			 retorno+="\n\t\t\t"+lista_entradas.get(i).toString();
 		  }
-		 retorno += "]\n";
+		 retorno += "\n";
 		 
 		 return retorno;
+	}
+	public String getNombre_grada() {
+		return nombre_grada;
+	}
+	public void setNombre_grada(String nombre_grada) {
+		this.nombre_grada = nombre_grada;
 	}
 	
 

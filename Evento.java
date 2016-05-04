@@ -5,10 +5,13 @@ public class Evento {
 
 	private int ID;
 	private int ID_recinto;
+	private String nombre_espectaculo;
+	private String nombre_recinto;
 	private Date fecha_inicio;
 	private Date fecha_fin;
 	private Date validez;
 	private int porcentaje_devolucion;
+	private int dur_max_pre_reserva;
 	
 
 	public Evento()
@@ -17,15 +20,18 @@ public class Evento {
 	 }
 	
 	
-	public Evento(int iD, int iD_recinto, Date fecha_inicio, Date fecha_fin,
-			Date validez, int porcentaje_devolucion) {
+	public Evento(int iD, int iD_recinto, String nombre_espectaculo, String nombre_recinto, Date fecha_inicio, Date fecha_fin,
+			Date validez, int porcentaje_devolucion, int dur_max_pre_reserva) {
 		super();
 		ID = iD;
 		ID_recinto = iD_recinto;
+		this.nombre_espectaculo = nombre_espectaculo;
+		this.nombre_recinto = nombre_recinto;
 		this.fecha_inicio = fecha_inicio;
 		this.fecha_fin = fecha_fin;
 		this.validez = validez;
 		this.porcentaje_devolucion = porcentaje_devolucion;
+		this.dur_max_pre_reserva = dur_max_pre_reserva;
 	}
 	
 	
@@ -69,10 +75,10 @@ public class Evento {
 
 	@Override
 	public String toString() {
-		return "Evento [ID=" + ID + ", ID_recinto=" + ID_recinto
-				+ ", fecha_inicio=" + fecha_inicio + ", fecha_fin=" + fecha_fin
-				+ ", validez=" + validez + ", porcentaje_devolución="
-				+ porcentaje_devolucion + "]";
+		String tab1="\t\t", tab2="\t\t\t";
+		if(nombre_recinto.length()>15) tab1="\t";
+		if(nombre_espectaculo.length()>15) tab2="\t";
+		return " "+ID+"\t"+nombre_espectaculo+tab2+nombre_recinto+tab1+fecha_inicio+"\t"+validez+"\t\t"+porcentaje_devolucion+"\t "+dur_max_pre_reserva;
 	}
 	
 

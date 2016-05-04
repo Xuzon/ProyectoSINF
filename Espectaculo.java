@@ -53,8 +53,9 @@ public class Espectaculo {
 	
 	@Override
 	public String toString() {
-		return "Espectaculo [ID=" + ID + ", Nombre=" + Nombre
-				+ ", Descripción=" + Descripcion + ", Tipo=" + Tipo + "]";
+		String tab="\t\t\t";
+		if(Nombre.length()>15) tab="\t";
+		return "\t"+ID+"\t"+Nombre+tab+Tipo+"\t\t"+Descripcion;
 	}
 	
 	
